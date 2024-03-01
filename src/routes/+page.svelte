@@ -21,7 +21,7 @@
         if(click_x === 0) return;
 
         let mouse_delta = click_x - event.clientX;
-        let maxDelta = innerWidth / 2;
+        let maxDelta = innerWidth / 1.5;
         percentage = Math.max(-100 + half_width / track_width * 100, Math.min((mouse_delta / maxDelta * -100) + prev_percentage, -half_width / track_width * 100));
 
         animateElement(track, 'transform', `translate(${percentage}%, -50%)`);
@@ -42,7 +42,7 @@
     }
 
     function animateElement(element: HTMLElement, property: string, value: string) {
-        element.animate([{ [property]: value }], { duration: 1800, fill: 'forwards' });
+        element.animate([{ [property]: value }], { duration: 1800, fill: 'forwards', easing: 'cubic-bezier(.48,.28,.31,.71)' });
     }
 
     function handle_mouse_down(event: MouseEvent) {
