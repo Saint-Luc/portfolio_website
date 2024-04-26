@@ -1,5 +1,5 @@
 <script lang="ts">
-    import img_src from '$lib/assets/philipp-a-urlich-cpncept593c.jpg';
+    import img_src from '$lib/assets/philipp-a-urlich-cpncept558-5-optsmall.jpg';
     import {cubicInOut, expoIn, expoInOut, expoOut} from "svelte/easing";
 
     let inner_width: number = $state(0);

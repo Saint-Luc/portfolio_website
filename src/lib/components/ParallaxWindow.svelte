@@ -1,29 +1,61 @@
 <script lang="ts">
-    import {goto} from "$app/navigation";
+    import {slide} from "svelte/transition";
 
-    let { img_src = '', inner_width = 0, position = 0 } = $props();
+    let { img_src = '', route ='', inner_width = 0, half_width = 0, duration = 1200, position = 0, moving = false, clicked = false, flush_states = false } = $props();
+
+    let anchor_hover = $state(false);
 
     let img: HTMLImageElement = $state();
 
-    let anchor: HTMLButtonElement = $state();
-    let anchor_rect = $derived.by(() => {
-        return anchor ? anchor.getBoundingClientRect() : undefined;
+    let div: HTMLDivElement = $state();
+    let div_rect = $derived.by(() => {
+        return div ? div.getBoundingClientRect() : undefined;
     });
-    let anchor_relative_center = $derived.by(() => {
-        return anchor_rect ? (inner_width / 2) - (anchor_rect.left + anchor_rect.width / 2) : 0;
+    let div_relative_center = $derived.by(() => {
+        return div_rect ? (inner_width / 2) - (div_rect.left + half_width) : 0;
     });
 
     $effect(() => {
-        img.animate([{ ['objectPosition']: `${0.4 * anchor_relative_center - 0.4 * position}px center` }], { duration: 1200, fill: 'forwards', easing: 'cubic-bezier(.48, .28, .31, .71)' })
+        if (position != 0)
+            img.animate([{['objectPosition']: `${0.4 * (div_relative_center - half_width - position)}px center`}], {
+                duration: duration,
+                fill: 'forwards',
+                easing: 'ease-in-out'
+            })
+    });
+
+    $effect(() => {
+        if (moving)
+            clicked = false;
     })
 
-    function transition_and_redirect() {
-        position = anchor_relative_center;
+    function prepare_travel() {
+        if (!moving && !anchor_hover) {
+            clicked = !clicked;
+            position = div_relative_center - half_width;
+        }
+    }
+
+    function toggle_flush_states() {
+        if (!anchor_hover)
+            flush_states = true;
+    }
+
+    function toggle_anchor_hover() {
+        anchor_hover = !anchor_hover;
+    }
+
+    function handle_space_enter(e) {
+        if (e.keyCode === 32 || e.keyCode === 13)
+            return prepare_travel();
     }
 </script>
 
-<button class="w-[40vmin] h-[56vmin] flex items-center justify-center overflow-hidden bg-blue-600" draggable="false" bind:this={anchor} onclick={transition_and_redirect}>
+<div role="toolbar" tabindex="0" class="relative w-[40vmin] h-[56vmin] flex items-center justify-center overflow-hidden" draggable="false" bind:this={div} onmousedown={toggle_flush_states} onclick={prepare_travel} onkeydown={handle_space_enter}>
     <div>
-        <img class="w-screen object-cover" alt="image1" src="{img_src}" style="object-position: {0.4 * anchor_relative_center}px" draggable="false" bind:this={img} />
+        <img class="w-[75vw] object-cover" alt="image1" src="{img_src}" style="object-position: {0.4 * div_relative_center}px" draggable="false" bind:this={img}/>
     </div>
-</button>
+    {#if clicked}
+        <a class="absolute text-[1.5vmin]" href={route} draggable="false" onmouseenter={toggle_anchor_hover} onmouseleave={toggle_anchor_hover} in:slide={{delay: 250, duration: 500}} out:slide={{duration: 400}}>TRAVEL HERE</a>
+    {/if}
+</div>
